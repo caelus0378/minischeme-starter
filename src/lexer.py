@@ -53,13 +53,23 @@ def tokenize(source):
 
 
 def _read_string(source, i):
-    """从开引号 i 读到闭引号，返回 (原始内容, 闭引号之后的位置)。"""
+    """从开引号 i 读到闭引号，返回 (原始内容, 闭引号之后的位置)。
+
+    反斜杠后的字符（含 \"）原样收进 raw 并由 _decode_string 还原，
+    因此转义的引号不会提前结束字符串。
+    """
     j = i + 1
     raw = []
     n = len(source)
     while j < n and source[j] != '"':
-        raw.append(source[j])
-        j += 1
+        c = source[j]
+        if c == '\\' and j + 1 < n:
+            raw.append(c)
+            raw.append(source[j + 1])
+            j += 2
+        else:
+            raw.append(c)
+            j += 1
     return ''.join(raw), j + 1
 
 
